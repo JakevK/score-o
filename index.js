@@ -1,7 +1,16 @@
 import Game from "./modules/game.js";
 
 let game = new Game();
-setInterval(() => {
-  game.newCourse(10);
+
+function newCourse() {
+  game.newCourse(20);
   game.render();
-}, 1000);
+}
+function clearCourse() {
+  game.clearCourse();
+  game.render();
+}
+
+newCourse();
+document.getElementById("next-btn").addEventListener("click", newCourse);
+document.getElementById("clear-btn").addEventListener("click", clearCourse);

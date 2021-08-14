@@ -4,20 +4,22 @@ export default class Control {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.next = null;
-    this.previous = null;
+    this.neighbours = [];
     this.isStart = false;
     this.radius = config.controlRadius;
-    // this.path = this.setPath();
+    this.hovered = false;
+    this.clicked = false;
   }
 
-  drawCircle(context, radius = this.radius) {
-    context.beginPath();
-    context.arc(this.x, this.y, radius, 0, 2 * Math.PI);
-    context.stroke();
+  coordinates() {
+    return [this.x, this.y];
   }
-  drawInnerCircle = (context) => this.drawCircle(context, this.radius * 0.8);
-  drawTriangle(context) {
+
+  drawCircle(path, radius = this.radius) {
+    path.arc(this.x, this.y, radius, 0, 2 * Math.PI);
+  }
+  drawInnerCircle = (path) => this.drawCircle(path, this.radius * 0.8);
+  drawTriangle(path) {
     const radius = this.radius * 1.4;
     const cornerCoords = (radius, cornerIndex) => {
       const angle = (1 / 3) * (2 * Math.PI) * cornerIndex + Math.PI / 6;
@@ -26,24 +28,28 @@ export default class Control {
         radius * Math.sin(angle) + this.y,
       ];
     };
-    context.beginPath();
-    context.moveTo(...cornerCoords(radius, 0));
-    [1, 2, 0].map((n) => context.lineTo(...cornerCoords(radius, n)));
-    context.stroke();
+    path.moveTo(...cornerCoords(radius, 0));
+    [1, 2, 0].map((n) => path.lineTo(...cornerCoords(radius, n)));
   }
 
-  setPath() {
+  path() {
+    this.radius =
+      config.controlRadius * (this.clicked || this.hovered ? 1.2 : 1);
     const path = new Path2D();
     this.drawCircle(path);
+    if (this.isStart) {
+      this.drawInnerCircle(path);
+      this.drawTriangle(path);
+    }
+    return path;
   }
 
   render(context) {
-    context.strokeStyle = config.colors.purple;
+    context.strokeStyle =
+      this.clicked || this.hovered ? config.colors.red : config.colors.purple;
     context.lineWidth = config.lineWidth;
-    this.drawCircle(context);
-    if (this.isStart) {
-      this.drawInnerCircle(context);
-      this.drawTriangle(context);
-    }
+    context.fillStyle = config.colors.white;
+    context.fill(this.path());
+    context.stroke(this.path());
   }
 }

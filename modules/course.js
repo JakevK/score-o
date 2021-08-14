@@ -25,7 +25,7 @@ export default class Course {
     return collision;
   }
 
-  randomControl(context) {
+  randomControl() {
     const coordinate = (bounds) =>
       parseInt(Math.random() * (bounds - 2 * config.controlRadius)) +
       config.controlRadius;
@@ -45,6 +45,48 @@ export default class Course {
         control.isStart = true;
       }
       this.controls.push(control);
+    }
+  }
+
+  clearRoute() {
+    for (const control of this.controls) {
+      control.neighbours = [];
+      control.clicked = false;
+    }
+  }
+
+  routeIsComplete() {
+    return this.controls.every((control) => control.neighbours.length === 2);
+  }
+
+  distanceBetweenControls(a, b) {
+    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+  }
+  routeDistance() {
+    let distance = 0;
+    for (const control of this.controls) {
+      for (const neighbour of control.neighbours) {
+        distance += this.distanceBetweenControls(neighbour, control);
+      }
+    }
+    return distance / 2;
+  }
+
+  render(context) {
+    // leg lines
+    for (const control of this.controls) {
+      for (const neighbour of control.neighbours) {
+        context.strokeStyle = config.colors.purple;
+        context.lineWidth = config.lineWidth;
+        context.beginPath();
+        context.moveTo(...control.coordinates());
+        context.lineTo(...neighbour.coordinates());
+        context.stroke();
+      }
+    }
+    // render controls
+    for (const control of this.controls) {
+      control.render(context);
     }
   }
 }
