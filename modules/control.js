@@ -5,6 +5,7 @@ export default class Control {
     this.x = x;
     this.y = y;
     this.neighbours = [];
+    this.optimalNeighbours = [];
     this.isStart = false;
     this.radius = config.controlRadius;
     this.hovered = false;

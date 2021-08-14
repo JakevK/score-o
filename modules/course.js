@@ -4,6 +4,7 @@ import Control from "./control.js";
 export default class Course {
   constructor(n, context) {
     this.generateControls(n, context);
+    this.findOptimalRoute();
   }
 
   axisCollision(s1, s2) {
@@ -62,20 +63,49 @@ export default class Course {
   distanceBetweenControls(a, b) {
     return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
   }
-  routeDistance() {
+  routeDistance(optimal = false) {
     let distance = 0;
     for (const control of this.controls) {
-      for (const neighbour of control.neighbours) {
+      for (const neighbour of optimal
+        ? control.optimalNeighbours
+        : control.neighbours) {
         distance += this.distanceBetweenControls(neighbour, control);
       }
     }
     return distance / 2;
   }
 
-  render(context) {
+  nearestNeighbourIndex(control, neighbours) {
+    let nnIndex = null;
+    let nearestDistance = config.canvasHeight + config.canvasWidth;
+    for (let i = 0; i < neighbours.length; i++) {
+      const distance = this.distanceBetweenControls(control, neighbours[i]);
+      if (distance < nearestDistance) {
+        nnIndex = i;
+        nearestDistance = distance;
+      }
+    }
+    return nnIndex;
+  }
+  findOptimalRoute() {
+    let unVisited = this.controls.slice(1);
+    let current = this.controls[0];
+    while (unVisited.length) {
+      let nnIndex = this.nearestNeighbourIndex(current, unVisited);
+      let next = unVisited.splice(nnIndex, 1)[0];
+      current.optimalNeighbours.push(next);
+      next.optimalNeighbours.push(current);
+      current = next;
+    }
+    current.optimalNeighbours.push(this.controls[0]);
+  }
+
+  render(context, optimal = false) {
     // leg lines
     for (const control of this.controls) {
-      for (const neighbour of control.neighbours) {
+      for (const neighbour of optimal
+        ? control.optimalNeighbours
+        : control.neighbours) {
         context.strokeStyle = config.colors.purple;
         context.lineWidth = config.lineWidth;
         context.beginPath();

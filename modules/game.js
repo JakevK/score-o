@@ -6,6 +6,7 @@ export default class Game {
     this.setUpCanvas();
     this.canvas.addEventListener("mousemove", (e) => this.onMouseMove(e));
     this.canvas.addEventListener("click", (e) => this.onClick(e));
+    this.showOptimal = false;
   }
 
   onMouseMove(e) {
@@ -97,7 +98,13 @@ export default class Game {
         this.context.stroke();
       }
     }
+    // show results
+    document.getElementById("optimal-results-box").innerHTML = this.showOptimal
+      ? "The optimal route is " +
+        parseInt(this.course.routeDistance(true)) +
+        " meters long"
+      : "";
     // render the course
-    this.course.render(this.context);
+    this.course.render(this.context, this.showOptimal);
   }
 }
