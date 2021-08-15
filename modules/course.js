@@ -98,6 +98,7 @@ export default class Course {
       current = next;
     }
     current.optimalNeighbours.push(this.controls[0]);
+    this.controls[0].optimalNeighbours.push(current);
   }
 
   render(context, optimal = false) {
