@@ -1,27 +1,28 @@
-import config from "./config.js";
-
 export default class Control {
-  constructor(x, y) {
+  constructor(x, y, radius, canvas, colors, lineWidth) {
     this.x = x;
     this.y = y;
     this.neighbours = [];
     this.optimalNeighbours = [];
     this.isStart = false;
-    this.radius = config.controlRadius;
+    this.colors = colors;
+    this.radius = radius;
+    this.canvas = canvas;
+    this.lineWidth = lineWidth;
     this.hovered = false;
-    this.clicked = false;
+    this.selected = false;
   }
 
   coordinates() {
     return [this.x, this.y];
   }
 
-  drawCircle(path, radius = this.radius) {
+  drawCircle(path, radius) {
     path.arc(this.x, this.y, radius, 0, 2 * Math.PI);
   }
-  drawInnerCircle = (path) => this.drawCircle(path, this.radius * 0.8);
-  drawTriangle(path) {
-    const radius = this.radius * 1.4;
+  drawInnerCircle = (path, radius) => this.drawCircle(path, radius * 0.8);
+  drawTriangle(path, radius) {
+    radius = radius * 1.4;
     const cornerCoords = (radius, cornerIndex) => {
       const angle = (1 / 3) * (2 * Math.PI) * cornerIndex + Math.PI / 6;
       return [
@@ -34,23 +35,22 @@ export default class Control {
   }
 
   path() {
-    this.radius =
-      config.controlRadius * (this.clicked || this.hovered ? 1.2 : 1);
+    const radius = this.radius * (this.selected || this.hovered ? 1.2 : 1);
     const path = new Path2D();
-    this.drawCircle(path);
+    this.drawCircle(path, radius);
     if (this.isStart) {
-      this.drawInnerCircle(path);
-      this.drawTriangle(path);
+      this.drawInnerCircle(path, radius);
+      this.drawTriangle(path, radius);
     }
     return path;
   }
 
-  render(context) {
-    context.strokeStyle =
-      this.clicked || this.hovered ? config.colors.red : config.colors.purple;
-    context.lineWidth = config.lineWidth;
-    context.fillStyle = config.colors.white;
-    context.fill(this.path());
-    context.stroke(this.path());
+  render() {
+    this.canvas.context.strokeStyle =
+      this.selected || this.hovered ? this.colors.red : this.colors.purple;
+    this.canvas.context.lineWidth = this.lineWidth;
+    this.canvas.context.fillStyle = this.colors.white;
+    this.canvas.context.fill(this.path());
+    this.canvas.context.stroke(this.path());
   }
 }
