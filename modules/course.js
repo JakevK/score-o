@@ -73,64 +73,52 @@ export default class Course {
   distanceBetweenControls(a, b) {
     return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
   }
-  calculateRouteDistance(neighbourType) {
+  routeDistance() {
     let distance = 0;
     for (const control of this.controls) {
-      for (const neighbour of control[neighbourType]) {
+      for (const neighbour of control.neighbours) {
         distance += this.distanceBetweenControls(neighbour, control);
       }
     }
     return distance / 2;
   }
-  routeDistance() {
-    return this.calculateRouteDistance("neighbours");
-  }
   optimalRouteDistance() {
-    return this.calculateRouteDistance("optimalNeighbours");
+    let distance = 0;
+    for (let i = 0; i < this.controls.length; i++) {
+      distance += this.distanceBetweenControls(
+        this.controls[i],
+        this.controls[(i + 1) % this.controls.length]
+      );
+    }
+    return distance;
   }
 
-  findRandomRoute() {
-    let unVisited = this.controls.slice(1);
-    let current = this.controls[0];
-    while (unVisited.length) {
-      let next = unVisited.splice(
-        parseInt(Math.random * unVisited.length),
-        1
-      )[0];
-      current.optimalNeighbours.push(next);
-      next.optimalNeighbours.push(current);
-      current = next;
+  control(i) {
+    while (i < 0) {
+      i += this.controls.length;
     }
-    current.optimalNeighbours.push(this.controls[0]);
-    this.controls[0].optimalNeighbours.unshift(current);
+    return this.controls[i % this.controls.length];
   }
+
   twoOpt() {
     while (true) {
       let improved = false;
 
-      for (let i = 0; i < this.controls.length - 1; i++) {
-        for (let j = i; j < this.controls.length; j++) {
-          let control1 = this.controls[i];
-          let control2 = this.controls[j];
+      for (let i = 0; i < this.controls.length - 2; i++) {
+        for (let j = i + 1; j < this.controls.length - 1; j++) {
+          let currDistance =
+            this.distanceBetweenControls(this.control(i - 1), this.control(i)) +
+            this.distanceBetweenControls(this.control(j + 1), this.control(j));
+          let newDistance =
+            this.distanceBetweenControls(this.control(i - 1), this.control(j)) +
+            this.distanceBetweenControls(this.control(j + 1), this.control(i));
 
-          if (control1.next() === control2 || control2.next() === control1)
-            continue;
-
-          let currentDistance =
-            this.distanceBetweenControls(control1, control1.next()) +
-            this.distanceBetweenControls(control2, control2.next());
-
-          let improvedDistance =
-            this.distanceBetweenControls(control1, control2) +
-            this.distanceBetweenControls(control2.next(), control1.next());
-
-          if (improvedDistance < currentDistance) {
-            const temp = this.controls[i].next();
-            console.log(temp);
-            this.controls[i].next().optimalNeighbours[0] = this.controls[j];
-            this.controls[j].next().optimalNeighbours[0] = this.controls[i];
-            this.controls[i].optimalNeighbours[1] = this.controls[j].next();
-            this.controls[j].optimalNeighbours[1] = temp;
+          if (newDistance < currDistance) {
+            // swap controls
+            let temp = this.controls[i];
+            this.controls[i] = this.controls[j];
+            this.controls[j] = temp;
+            improved = true;
           }
         }
       }
@@ -139,10 +127,7 @@ export default class Course {
     }
   }
   findOptimalRoute() {
-    this.findRandomRoute();
-    console.log(this.controls.map((control) => control.optimalNeighbours));
     this.twoOpt();
-    console.log(this.controls.map((control) => control.optimalNeighbours));
   }
 
   render(mouseCoords) {
@@ -175,13 +160,13 @@ export default class Course {
   renderOptimalRoute() {
     this.canvas.context.strokeStyle = "#00FF00";
     this.canvas.context.lineWidth = this.lineWidth * 10;
-    for (const control of this.controls) {
-      for (const neighbour of control.optimalNeighbours) {
-        this.canvas.context.beginPath();
-        this.canvas.context.moveTo(...control.coordinates());
-        this.canvas.context.lineTo(...neighbour.coordinates());
-        this.canvas.context.stroke();
-      }
+    for (let i = 0; i < this.controls.length; i++) {
+      this.canvas.context.beginPath();
+      this.canvas.context.moveTo(...this.controls[i].coordinates());
+      this.canvas.context.lineTo(
+        ...this.controls[(i + 1) % this.controls.length].coordinates()
+      );
+      this.canvas.context.stroke();
     }
   }
 }

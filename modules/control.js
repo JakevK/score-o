@@ -3,7 +3,6 @@ export default class Control {
     this.x = x;
     this.y = y;
     this.neighbours = [];
-    this.optimalNeighbours = [];
     this.isStart = false;
     this.colors = colors;
     this.radius = radius;
