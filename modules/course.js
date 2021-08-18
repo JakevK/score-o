@@ -89,30 +89,60 @@ export default class Course {
     return this.calculateRouteDistance("optimalNeighbours");
   }
 
-  nearestNeighbourIndex(control, neighbours) {
-    let nnIndex = null;
-    let nearestDistance = this.canvas.height + this.canvas.width;
-    for (let i = 0; i < neighbours.length; i++) {
-      const distance = this.distanceBetweenControls(control, neighbours[i]);
-      if (distance < nearestDistance) {
-        nnIndex = i;
-        nearestDistance = distance;
-      }
-    }
-    return nnIndex;
-  }
-  findOptimalRoute() {
+  findRandomRoute() {
     let unVisited = this.controls.slice(1);
     let current = this.controls[0];
     while (unVisited.length) {
-      let nnIndex = this.nearestNeighbourIndex(current, unVisited);
-      let next = unVisited.splice(nnIndex, 1)[0];
+      let next = unVisited.splice(
+        parseInt(Math.random * unVisited.length),
+        1
+      )[0];
       current.optimalNeighbours.push(next);
       next.optimalNeighbours.push(current);
       current = next;
     }
     current.optimalNeighbours.push(this.controls[0]);
-    this.controls[0].optimalNeighbours.push(current);
+    this.controls[0].optimalNeighbours.unshift(current);
+  }
+  twoOpt() {
+    while (true) {
+      let improved = false;
+
+      for (let i = 0; i < this.controls.length - 1; i++) {
+        for (let j = i; j < this.controls.length; j++) {
+          let control1 = this.controls[i];
+          let control2 = this.controls[j];
+
+          if (control1.next() === control2 || control2.next() === control1)
+            continue;
+
+          let currentDistance =
+            this.distanceBetweenControls(control1, control1.next()) +
+            this.distanceBetweenControls(control2, control2.next());
+
+          let improvedDistance =
+            this.distanceBetweenControls(control1, control2) +
+            this.distanceBetweenControls(control2.next(), control1.next());
+
+          if (improvedDistance < currentDistance) {
+            const temp = this.controls[i].next();
+            console.log(temp);
+            this.controls[i].next().optimalNeighbours[0] = this.controls[j];
+            this.controls[j].next().optimalNeighbours[0] = this.controls[i];
+            this.controls[i].optimalNeighbours[1] = this.controls[j].next();
+            this.controls[j].optimalNeighbours[1] = temp;
+          }
+        }
+      }
+
+      if (!improved) return;
+    }
+  }
+  findOptimalRoute() {
+    this.findRandomRoute();
+    console.log(this.controls.map((control) => control.optimalNeighbours));
+    this.twoOpt();
+    console.log(this.controls.map((control) => control.optimalNeighbours));
   }
 
   render(mouseCoords) {

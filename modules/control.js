@@ -16,6 +16,12 @@ export default class Control {
   coordinates() {
     return [this.x, this.y];
   }
+  next() {
+    return this.optimalNeighbours[1];
+  }
+  prev() {
+    return this.optimalNeighbours[0];
+  }
 
   drawCircle(path, radius) {
     path.arc(this.x, this.y, radius, 0, 2 * Math.PI);

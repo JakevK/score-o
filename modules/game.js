@@ -24,7 +24,6 @@ export default class Game {
     this.mode = "planning";
   }
   initializeGame() {
-    console.log("h");
     this.canvas = new Canvas("game-canvas");
     this.newCourse();
     this.canvas.onMouseMove = (x, y) => this.handleMouseMove(x, y);
@@ -123,6 +122,7 @@ export default class Game {
 
     switch (this.mode) {
       case "planning":
+        this.course.renderOptimalRoute();
         this.course.render(mouseCoords);
         break;
       case "reflecting":
