@@ -19,9 +19,9 @@ export default class Game {
   }
   setDefaults() {
     this.numberOfControls = 20;
-    this.controlRadius = 15;
+    this.controlRadius = 20;
     this.lineWidth = this.controlRadius / 10;
-    this.mode = "planning";
+    this.showOptimal = false;
   }
   initializeGame() {
     this.canvas = new Canvas("game-canvas");
@@ -36,29 +36,35 @@ export default class Game {
   setInputs() {
     this.setInput("clear-btn", "click", (e) => {
       this.course.clearRoute();
+      document.getElementById("submit-btn").style.display = "none";
+      document.getElementById("text-box").innerHTML = "Go ahead. Plan a route";
       this.render();
     });
     this.setInput("submit-btn", "click", (e) => {
       if (!this.course.routeIsComplete()) {
         return;
       }
-      this.mode = "reflecting";
       document.getElementById("clear-btn").style.display = "none";
       document.getElementById("submit-btn").style.display = "none";
-      const routeDistance = this.course.routeDistance();
-      const optimalRouteDistance = this.course.optimalRouteDistance();
+      document.getElementById("next-btn").style.display = "block";
+      const routeDistance = parseInt(this.course.routeDistance());
+      const optimalRouteDistance = parseInt(this.course.optimalRouteDistance());
       let message;
       if (routeDistance > optimalRouteDistance) {
         const percentage = parseInt(
           100 - (optimalRouteDistance / routeDistance) * 100
         );
+        this.showOptimal = true;
         message = `I found a route ${percentage}% shorter than yours.  Have a look.`;
       } else {
         message =
           "Far out!  That's a good route.  I couldn't think of a better one myself.";
       }
-      document.getElementById("results-box").innerHTML = message;
+      document.getElementById("text-box").innerHTML = message;
       this.render();
+    });
+    this.setInput("next-btn", "click", (e) => {
+      this.newCourse();
     });
   }
 
@@ -87,6 +93,10 @@ export default class Game {
           previousControl.selected = false;
           previousControl.neighbours.push(control);
           control.neighbours.push(previousControl);
+          if (this.course.routeIsComplete()) {
+            document.getElementById("submit-btn").style.display = "block";
+            document.getElementById("text-box").innerHTML = "Are you done?";
+          }
         }
         if (control.neighbours.length < 2) {
           control.selected = true;
@@ -112,6 +122,12 @@ export default class Game {
       this.controlRadius,
       this.lineWidth
     );
+    document.getElementById("clear-btn").style.display = "block";
+    document.getElementById("submit-btn").style.display = "none";
+    document.getElementById("next-btn").style.display = "none";
+    document.getElementById("text-box").innerHTML = "Go ahead. Plan a route!";
+    this.showOptimal = false;
+    this.render();
   }
 
   /* -------------- render -------------- */
@@ -120,15 +136,7 @@ export default class Game {
     this.canvas.context.fillStyle = this.colors.white;
     this.canvas.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    switch (this.mode) {
-      case "planning":
-        this.course.renderOptimalRoute();
-        this.course.render(mouseCoords);
-        break;
-      case "reflecting":
-        this.course.renderOptimalRoute();
-        this.course.render(mouseCoords);
-        break;
-    }
+    if (this.showOptimal) this.course.renderOptimalRoute();
+    this.course.render(mouseCoords);
   }
 }
