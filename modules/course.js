@@ -31,8 +31,8 @@ export default class Course {
 
   randomControl() {
     const coordinate = (bounds) =>
-      parseInt(Math.random() * (bounds - 2 * this.controlRadius)) +
-      this.controlRadius;
+      parseInt(Math.random() * (bounds - 4 * this.controlRadius)) +
+      this.controlRadius * 2;
     const controlX = coordinate(this.canvas.width);
     const controlY = coordinate(this.canvas.height);
     return new Control(
@@ -192,7 +192,7 @@ export default class Course {
     }
   }
   renderOptimalRoute() {
-    this.canvas.context.strokeStyle = "#00FF00";
+    this.canvas.context.strokeStyle = this.colors.green;
     this.canvas.context.lineWidth = this.lineWidth * 10;
     for (let i = 0; i < this.controls.length; i++) {
       this.canvas.context.beginPath();

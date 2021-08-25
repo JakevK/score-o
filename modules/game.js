@@ -15,6 +15,7 @@ export default class Game {
       purple: "#A626FF",
       red: "#e00b41",
       white: "#FFFFFF",
+      green: "#00FF00",
     };
   }
   setDefaults() {
@@ -46,7 +47,7 @@ export default class Game {
       }
       document.getElementById("clear-btn").style.display = "none";
       document.getElementById("submit-btn").style.display = "none";
-      document.getElementById("next-btn").style.display = "block";
+      document.getElementById("next-btn").style.display = "inline-block";
       const routeDistance = parseInt(this.course.routeDistance());
       const optimalRouteDistance = parseInt(this.course.optimalRouteDistance());
       let message;
@@ -60,7 +61,6 @@ export default class Game {
         message =
           "Far out!  That's a good route.  I couldn't think of a better one myself.";
       }
-      message += `\noptimal: ${optimalRouteDistance}\nyours: ${routeDistance}`;
       document.getElementById("text-box").innerHTML = message;
       this.render();
     });
@@ -95,7 +95,8 @@ export default class Game {
           previousControl.neighbours.push(control);
           control.neighbours.push(previousControl);
           if (this.course.routeIsComplete()) {
-            document.getElementById("submit-btn").style.display = "block";
+            document.getElementById("submit-btn").style.display =
+              "inline-block";
             document.getElementById("text-box").innerHTML = "Are you done?";
           }
         }
@@ -123,7 +124,7 @@ export default class Game {
       this.controlRadius,
       this.lineWidth
     );
-    document.getElementById("clear-btn").style.display = "block";
+    document.getElementById("clear-btn").style.display = "inline-block";
     document.getElementById("submit-btn").style.display = "none";
     document.getElementById("next-btn").style.display = "none";
     document.getElementById("text-box").innerHTML = "Go ahead. Plan a route!";
