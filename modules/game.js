@@ -19,7 +19,7 @@ export default class Game {
   }
   setDefaults() {
     this.numberOfControls = 20;
-    this.controlRadius = 20;
+    this.controlRadius = 15;
     this.lineWidth = this.controlRadius / 10;
     this.showOptimal = false;
   }
@@ -60,6 +60,7 @@ export default class Game {
         message =
           "Far out!  That's a good route.  I couldn't think of a better one myself.";
       }
+      message += `\noptimal: ${optimalRouteDistance}\nyours: ${routeDistance}`;
       document.getElementById("text-box").innerHTML = message;
       this.render();
     });
@@ -136,6 +137,7 @@ export default class Game {
     this.canvas.context.fillStyle = this.colors.white;
     this.canvas.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+    //this.showOptimal = true;
     if (this.showOptimal) this.course.renderOptimalRoute();
     this.course.render(mouseCoords);
   }

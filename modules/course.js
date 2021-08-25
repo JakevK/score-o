@@ -70,22 +70,32 @@ export default class Course {
     return this.controls.every((control) => control.neighbours.length === 2);
   }
 
-  distanceBetweenControls(a, b) {
+  controlDistance(a, b) {
     return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
   }
   routeDistance() {
     let distance = 0;
     for (const control of this.controls) {
       for (const neighbour of control.neighbours) {
-        distance += this.distanceBetweenControls(neighbour, control);
+        distance += this.controlDistance(neighbour, control);
       }
     }
     return distance / 2;
   }
+  measureRoute(controls) {
+    let distance = 0;
+    for (let i = 0; i < controls.length; i++) {
+      distance += this.controlDistance(
+        controls[i],
+        controls[(i + 1) % controls.length]
+      );
+    }
+    return distance;
+  }
   optimalRouteDistance() {
     let distance = 0;
     for (let i = 0; i < this.controls.length; i++) {
-      distance += this.distanceBetweenControls(
+      distance += this.controlDistance(
         this.controls[i],
         this.controls[(i + 1) % this.controls.length]
       );
@@ -94,12 +104,37 @@ export default class Course {
   }
 
   control(i) {
-    while (i < 0) {
+    i = i % this.controls.length;
+    if (i < 0) {
       i += this.controls.length;
     }
-    return this.controls[i % this.controls.length];
+    return this.controls[i];
   }
 
+  simulatedAnnealing() {
+    let temperature = 1000;
+    while (temperature > 0.1) {
+      for (let n = 0; n < 100; n++) {
+        const i = parseInt(Math.random() * (this.controls.length - 1));
+        const j = parseInt(Math.random() * (this.controls.length - i - 2)) + i;
+
+        const costDiff =
+          this.controlDistance(this.control(i), this.control(i - 1)) +
+          this.controlDistance(this.control(j), this.control(j + 1)) -
+          (this.controlDistance(this.control(i), this.control(j + 1)) +
+            this.controlDistance(this.control(j), this.control(i - 1)));
+
+        if (
+          costDiff >= 0 ||
+          Math.random() <= Math.E ** (costDiff / temperature)
+        ) {
+          let section = this.controls.splice(i, j - i + 1);
+          this.controls.splice(i, 0, ...section.reverse());
+        }
+      }
+      temperature = temperature * 0.99;
+    }
+  }
   twoOpt() {
     while (true) {
       let improved = false;
@@ -107,17 +142,15 @@ export default class Course {
       for (let i = 0; i < this.controls.length - 2; i++) {
         for (let j = i + 1; j < this.controls.length - 1; j++) {
           let currDistance =
-            this.distanceBetweenControls(this.control(i - 1), this.control(i)) +
-            this.distanceBetweenControls(this.control(j + 1), this.control(j));
+            this.controlDistance(this.control(i), this.control(i - 1)) +
+            this.controlDistance(this.control(j), this.control(j + 1));
           let newDistance =
-            this.distanceBetweenControls(this.control(i - 1), this.control(j)) +
-            this.distanceBetweenControls(this.control(j + 1), this.control(i));
+            this.controlDistance(this.control(i), this.control(j + 1)) +
+            this.controlDistance(this.control(j), this.control(i - 1));
 
           if (newDistance < currDistance) {
-            // swap controls
-            let temp = this.controls[i];
-            this.controls[i] = this.controls[j];
-            this.controls[j] = temp;
+            let section = this.controls.splice(i, j - i + 1);
+            this.controls.splice(i, 0, ...section.reverse());
             improved = true;
           }
         }
@@ -127,6 +160,7 @@ export default class Course {
     }
   }
   findOptimalRoute() {
+    this.simulatedAnnealing();
     this.twoOpt();
   }
 
