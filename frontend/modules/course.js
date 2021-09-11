@@ -6,6 +6,7 @@ export default class Course {
     this.colors = colors;
     this.lineWidth = lineWidth;
     this.controlRadius = controlRadius;
+    this.legs = [];
     this.generateControls(n);
     this.findOptimalRoute();
   }
@@ -31,8 +32,8 @@ export default class Course {
 
   randomControl() {
     const coordinate = (bounds) =>
-      parseInt(Math.random() * (bounds - 4 * this.controlRadius)) +
-      this.controlRadius * 2;
+      parseInt(Math.random() * (bounds - 6 * this.controlRadius)) +
+      this.controlRadius * 3;
     const controlX = coordinate(this.canvas.width);
     const controlY = coordinate(this.canvas.height);
     return new Control(
@@ -64,10 +65,27 @@ export default class Course {
       control.neighbours = [];
       control.selected = false;
     }
+    this.legs = [];
   }
 
   routeIsComplete() {
-    return this.controls.every((control) => control.neighbours.length === 2);
+    let unvisited = new Set(this.controls);
+    let curr = this.controls[0];
+
+    while (true) {
+      unvisited.delete(curr);
+      let finished = true;
+
+      for (const neighbour of curr.neighbours) {
+        if (unvisited.has(neighbour)) {
+          curr = neighbour;
+          finished = false;
+          break;
+        }
+      }
+
+      if (finished) return !unvisited.size;
+    }
   }
 
   controlDistance(a, b) {
@@ -160,21 +178,21 @@ export default class Course {
     }
   }
   findOptimalRoute() {
+    this.controls.sort((a, b) => 0.5 - Math.random());
+    if (this.controls.length < 2) return;
     this.simulatedAnnealing();
     this.twoOpt();
   }
 
+  renderControls() {
+    this.controls.map((control) => control.render());
+  }
   render(mouseCoords) {
     // leg lines
+    this.legs.map((leg) => leg.render());
+
+    // selection line
     for (const control of this.controls) {
-      for (const neighbour of control.neighbours) {
-        this.canvas.context.strokeStyle = this.colors.purple;
-        this.canvas.context.lineWidth = this.lineWidth;
-        this.canvas.context.beginPath();
-        this.canvas.context.moveTo(...control.coordinates());
-        this.canvas.context.lineTo(...neighbour.coordinates());
-        this.canvas.context.stroke();
-      }
       if (control.selected) {
         this.canvas.context.strokeStyle = this.colors.red;
         this.canvas.context.lineWidth = this.lineWidth;
@@ -184,16 +202,14 @@ export default class Course {
         this.canvas.context.stroke();
       }
     }
-    // selection line
 
-    // render controls
-    for (const control of this.controls) {
-      control.render();
-    }
+    this.renderControls();
   }
-  renderOptimalRoute() {
-    this.canvas.context.strokeStyle = this.colors.green;
-    this.canvas.context.lineWidth = this.lineWidth * 10;
+  renderOptimalRoute(highlight = true) {
+    this.canvas.context.strokeStyle = highlight
+      ? this.colors.green
+      : this.colors.purple;
+    this.canvas.context.lineWidth = this.lineWidth * (highlight ? 10 : 1);
     for (let i = 0; i < this.controls.length; i++) {
       this.canvas.context.beginPath();
       this.canvas.context.moveTo(...this.controls[i].coordinates());

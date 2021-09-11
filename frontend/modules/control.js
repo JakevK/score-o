@@ -5,6 +5,7 @@ export default class Control {
     this.neighbours = [];
     this.isStart = false;
     this.colors = colors;
+    this.color = colors.purple;
     this.radius = radius;
     this.canvas = canvas;
     this.lineWidth = lineWidth;
@@ -52,7 +53,7 @@ export default class Control {
 
   render() {
     this.canvas.context.strokeStyle =
-      this.selected || this.hovered ? this.colors.red : this.colors.purple;
+      this.selected || this.hovered ? this.colors.red : this.color;
     this.canvas.context.lineWidth = this.lineWidth;
     this.canvas.context.fillStyle = this.colors.white;
     this.canvas.context.fill(this.path());

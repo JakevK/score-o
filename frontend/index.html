@@ -10,16 +10,20 @@
 </head>
 
 <body>
-    <canvas id="game-canvas"></canvas>
 
-    
-    <button id="clear-btn">clear</button>
+    <div class="container">
+        <div class="menu">
+            <img class="logo" src="logo.png" alt="score-o">
+            <button id="clear-btn">clear</button>
+            <a class="btn-link" href="/help">help</a>
 
-    <div id="text-box"></div>
-    <button id="submit-btn" style="display: none">done</button>
-    <button id="next-btn" style="display: none">next course</button>
-<div>
-        <a href="/help">help</a>
+            <div id="text-box" class="text-box"></div>
+            <button id="submit-btn" class="submit-btn" style="display: none">done</button>
+            <button id="next-btn" class="submit-btn" style="display: none">next course</button>
+
+        </div>
+
+        <canvas id="game-canvas"></canvas>
     </div>
 
     <script type="module" src="index.js"></script>
